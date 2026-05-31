@@ -1,0 +1,90 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h2>Panel de Administracion</h2>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">Total Registrados</span>
+        <span class="stat-value"><%= stats.total || 0 %></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Pendientes</span>
+        <span class="stat-value"><%= stats.pending || 0 %></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Activos</span>
+        <span class="stat-value"><%= stats.active || 0 %></span>
+      </div>
+    </div>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert alert-error"><%= error %></div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success"><%= success %></div>
+  <% } %>
+
+  <div class="admin-section">
+    <h3>Usuarios Registrados</h3>
+    <div class="table-wrapper">
+      <table class="mu-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Fecha Registro</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (users && users.length > 0) { %>
+            <% users.forEach(user => { %>
+              <tr>
+                <td><%= user.id %></td>
+                <td><strong><%= user.username %></strong></td>
+                <td><%= user.email %></td>
+                <td><%= new Date(user.created_at).toLocaleString('es-AR') %></td>
+                <td>
+                  <span class="status-badge status-<%= user.status %>">
+                    <%= user.status === 'pending' ? 'Pendiente' : 'Activo' %>
+                  </span>
+                </td>
+                <td>
+                  <button class="btn btn-small btn-secondary" onclick="copyToClipboard('<%= user.username %>', '<%= user.email %>')">Copiar datos</button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" class="text-center">No hay usuarios registrados aun.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="admin-section">
+    <h3>Como crear cuentas en OpenMU</h3>
+    <div class="info-box">
+      <ol>
+        <li>Abri el <a href="http://localhost:5000" target="_blank">Panel de Admin de OpenMU</a></li>
+        <li>Navega a <strong>Accounts</strong> y haz click en <strong>Create New</strong></li>
+        <li>Completa los datos copiados desde esta tabla</li>
+        <li>La contraseña en OpenMU se guarda con BCrypt (la misma que ingreso el usuario)</li>
+        <li><strong>Proximamente:</strong> sincronizacion automatica con el servidor.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+  function copyToClipboard(username, email) {
+    const text = `Usuario: ${username} | Email: ${email}`;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Datos copiados al portapapeles');
+    });
+  }
+</script>

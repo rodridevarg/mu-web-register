@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'MU Online - Registro' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="main-header">
+      <div class="logo">
+        <h1>MU Online</h1>
+        <span class="subtitle">Season 6 EP3</span>
+      </div>
+      <nav class="main-nav">
+        <a href="/">Inicio</a>
+        <a href="/register">Registro</a>
+        <% if (admin) { %>
+          <a href="/admin">Panel Admin</a>
+          <a href="/logout">Salir</a>
+        <% } else { %>
+          <a href="/login">Admin</a>
+        <% } %>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <%- body %>
+    </main>
+
+    <footer class="main-footer">
+      <p>Servidor privado MU Online. No oficial.</p>
+      <p class="small">OpenMU + MuMain | Powered by AI Economy</p>
+    </footer>
+  </div>
+</body>
+</html>

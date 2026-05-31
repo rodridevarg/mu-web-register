@@ -1,0 +1,40 @@
+<div class="form-container">
+  <div class="form-box">
+    <h2 class="form-title">Crear Cuenta</h2>
+    
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+    <% if (success) { %>
+      <div class="alert alert-success"><%= success %></div>
+    <% } %>
+
+    <form action="/register" method="POST" class="mu-form">
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input type="text" id="username" name="username" maxlength="10" required placeholder="3-10 caracteres">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required placeholder="tu@email.com">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password" maxlength="20" required placeholder="3-20 caracteres">
+      </div>
+
+      <div class="form-group">
+        <label for="confirm_password">Confirmar Contraseña</label>
+        <input type="password" id="confirm_password" name="confirm_password" maxlength="20" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+    </form>
+
+    <div class="form-note">
+      <p><strong>Nota:</strong> Una vez registrado, contacta a un admin para que active tu cuenta en el servidor, o usa el <a href="http://localhost:5000" target="_blank">Panel de Admin de OpenMU</a> si sos administrador.</p>
+    </div>
+  </div>
+</div>
