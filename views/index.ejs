@@ -1,10 +1,34 @@
 <div class="hero-section">
   <div class="hero-content">
-    <h2>Bienvenido a MU Online</h2>
+    <h2>Bienvenido a LiberMU</h2>
     <p class="hero-text">Unete a la aventura. Crea tu cuenta y comienza a jugar hoy mismo.</p>
     <div class="hero-buttons">
       <a href="/register" class="btn btn-primary">Crear Cuenta</a>
       <a href="/download" class="btn btn-secondary">Descargar Cliente</a>
+    </div>
+  </div>
+</div>
+
+<div class="server-status-section">
+  <div class="server-status-card <%= serverStatus.online ? 'server-online' : 'server-offline' %>">
+    <div class="status-icon">
+      <span class="status-pulse"></span>
+    </div>
+    <div class="status-info">
+      <h3>Estado del Servidor</h3>
+      <div class="status-big-text"><%= serverStatus.online ? 'ONLINE' : 'OFFLINE' %></div>
+      <p class="status-detail">
+        <% if (serverStatus.online) { %>
+          El servidor esta activo y listo para jugar.
+        <% } else { %>
+          El servidor esta en mantenimiento. Volve mas tarde.
+        <% } %>
+      </p>
+      <div class="status-meta">
+        <span class="meta-item">IP: 216.238.105.18</span>
+        <span class="meta-item">Puerto: 44406</span>
+        <span class="meta-item">Season 6 EP3</span>
+      </div>
     </div>
   </div>
 </div>

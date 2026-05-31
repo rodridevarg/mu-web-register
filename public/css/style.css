@@ -87,7 +87,129 @@ body {
   border-bottom-color: var(--mu-gold);
 }
 
-/* Server Status Indicator */
+/* Server Status Section (Home Page) */
+.server-status-section {
+  margin-bottom: 2rem;
+}
+
+.server-status-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid;
+  transition: all 0.3s ease;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.server-status-card.server-online {
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(39, 174, 96, 0.05) 100%);
+  border-color: #27ae60;
+  box-shadow: 0 0 30px rgba(39, 174, 96, 0.15);
+}
+
+.server-status-card.server-offline {
+  background: linear-gradient(135deg, rgba(192, 57, 43, 0.1) 0%, rgba(192, 57, 43, 0.05) 100%);
+  border-color: #c0392b;
+  box-shadow: 0 0 30px rgba(192, 57, 43, 0.15);
+}
+
+.status-icon {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-pulse {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: block;
+  position: relative;
+}
+
+.server-online .status-pulse {
+  background: #2ecc71;
+  box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.server-offline .status-pulse {
+  background: #e74c3c;
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.6);
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(46, 204, 113, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-info h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--mu-gold);
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.status-big-text {
+  font-family: 'Cinzel', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  letter-spacing: 3px;
+}
+
+.server-online .status-big-text {
+  color: #2ecc71;
+  text-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+}
+
+.server-offline .status-big-text {
+  color: #e74c3c;
+  text-shadow: 0 0 20px rgba(231, 76, 60, 0.4);
+}
+
+.status-detail {
+  color: var(--mu-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.status-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.meta-item {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--mu-text-muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--mu-border);
+}
+
+/* Server Status Indicator (Header) */
 .server-status-box {
   display: flex;
   align-items: center;
