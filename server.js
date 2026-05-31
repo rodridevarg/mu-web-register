@@ -145,6 +145,21 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// Download page
+app.get('/download', (req, res) => {
+  res.render('download', { title: 'Descargar Cliente' });
+});
+
+// Serve client zip file
+app.get('/download/client', (req, res) => {
+  const filePath = path.join(__dirname, 'public', 'downloads', 'MuMain_Client.zip');
+  if (require('fs').existsSync(filePath)) {
+    res.download(filePath, 'LiberMU_Client.zip');
+  } else {
+    res.status(404).send('Cliente no disponible temporalmente. Contacta al admin.');
+  }
+});
+
 // Login de admin
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
