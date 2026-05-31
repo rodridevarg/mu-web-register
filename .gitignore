@@ -1,6 +1,4 @@
-# LiberMU Web Registration
-node_modules/
+/node_modules
 *.db
 *.log
-.DS_Store
-.env
+public/downloads/*.zip
