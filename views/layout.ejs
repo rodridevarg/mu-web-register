@@ -14,6 +14,12 @@
         <h1>MU Online</h1>
         <span class="subtitle">Season 6 EP3</span>
       </div>
+      <div class="server-status-box">
+        <div class="status-indicator <%= serverStatus.online ? 'status-online' : 'status-offline' %>">
+          <span class="status-dot"></span>
+          <span class="status-text"><%= serverStatus.label %></span>
+        </div>
+      </div>
       <nav class="main-nav">
         <a href="/">Inicio</a>
         <a href="/register">Registro</a>

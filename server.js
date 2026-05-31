@@ -3,6 +3,7 @@ const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const net = require('net');
 const { run, get, all } = require('./database');
 const { Pool } = require('pg');
 
@@ -35,10 +36,37 @@ app.use(session({
 }));
 
 // Variables globales para vistas
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.admin = req.session.admin || null;
+  res.locals.serverStatus = await checkServerStatus();
   next();
+});
+
+// Helper: Verificar estado del servidor de juego (puerto 44406)
+async function checkServerStatus() {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+    socket.setTimeout(3000);
+    socket.on('connect', () => {
+      socket.destroy();
+      resolve({ online: true, label: 'Online', players: '???' });
+    });
+    socket.on('timeout', () => {
+      socket.destroy();
+      resolve({ online: false, label: 'Offline', players: '-' });
+    });
+    socket.on('error', () => {
+      resolve({ online: false, label: 'Offline', players: '-' });
+    });
+    socket.connect(44406, 'localhost');
+  });
+}
+
+// API endpoint para estado (usado por AJAX)
+app.get('/api/status', async (req, res) => {
+  const status = await checkServerStatus();
+  res.json(status);
 });
 
 // ================== RUTAS ==================
