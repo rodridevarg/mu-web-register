@@ -9,7 +9,7 @@
       <h3>Top Patrimonio</h3>
       <p class="ranking-desc">Basado en Zen + Joyas (Bless, Soul, Life, Chaos) convertidas a Bless-equivalente.</p>
       <div class="table-wrapper">
-        <table class="mu-table">
+        <table class="mu-table" id="patrimony-table">
           <thead>
             <tr>
               <th>#</th>
@@ -20,7 +20,7 @@
           </thead>
           <tbody>
             <tr>
-              <td colspan="4" class="text-center">Los rankings se calcularan cuando haya suficiente actividad economica.</td>
+              <td colspan="4" class="text-center">Cargando...</td>
             </tr>
           </tbody>
         </table>
@@ -28,21 +28,21 @@
     </div>
 
     <div class="ranking-card">
-      <h3>Top Transacciones P2P</h3>
-      <p class="ranking-desc">Jugadores con mayor volumen de intercambios en el mercado.</p>
+      <h3>Ultimas Transacciones P2P</h3>
+      <p class="ranking-desc">Registro de intercambios recientes en el mercado.</p>
       <div class="table-wrapper">
-        <table class="mu-table">
+        <table class="mu-table" id="transactions-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Jugador</th>
-              <th>Volumen Total</th>
-              <th>Transacciones</th>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Item</th>
+              <th>Precio</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colspan="4" class="text-center">Los rankings se calcularan cuando haya suficiente actividad economica.</td>
+              <td colspan="4" class="text-center">Cargando...</td>
             </tr>
           </tbody>
         </table>
@@ -52,22 +52,22 @@
     <div class="ranking-card">
       <h3>Precios de Referencia</h3>
       <p class="ranking-desc">Precios oficiales en Zen, establecidos por la administracion.</p>
-      <div class="reference-prices">
+      <div class="reference-prices" id="reference-prices">
         <div class="price-row">
           <span class="price-item">Jewel of Bless</span>
-          <span class="price-value">10.000.000 Zen</span>
+          <span class="price-value">1.0 Bless</span>
         </div>
         <div class="price-row">
           <span class="price-item">Jewel of Soul</span>
-          <span class="price-value">15.000.000 Zen</span>
+          <span class="price-value">0.5 Bless</span>
         </div>
         <div class="price-row">
           <span class="price-item">Jewel of Life</span>
-          <span class="price-value">50.000.000 Zen</span>
+          <span class="price-value">3.0 Bless</span>
         </div>
         <div class="price-row">
           <span class="price-item">Jewel of Chaos</span>
-          <span class="price-value">30.000.000 Zen</span>
+          <span class="price-value">5.0 Bless</span>
         </div>
         <div class="price-row">
           <span class="price-item">Pack Mensual Tienda</span>
@@ -81,3 +81,72 @@
     <p><strong>Nota:</strong> Estos rankings se actualizan cuando los jugadores usan el comando <code>/patrimonio</code> en el juego. El patrimonio solo considera Zen y Joyas en el inventario, baul y personaje. No incluye items equipados ni en el Chaos Machine.</p>
   </div>
 </div>
+
+<script>
+async function loadRankings() {
+  try {
+    const [marketRes, patrimonyRes] = await Promise.all([
+      fetch('/api/economy/market'),
+      fetch('/api/economy/patrimony/top')
+    ]);
+
+    const marketData = await marketRes.json();
+    const patrimonyData = await patrimonyRes.json();
+
+    // Render reference prices
+    const refContainer = document.getElementById('reference-prices');
+    if (marketData.referencePrices && marketData.referencePrices.length > 0) {
+      refContainer.innerHTML = marketData.referencePrices.map(p => `
+        <div class="price-row">
+          <span class="price-item">${p.ItemName}</span>
+          <span class="price-value">${p.PriceInBless} Bless</span>
+        </div>
+      `).join('') + `
+        <div class="price-row">
+          <span class="price-item">Pack Mensual Tienda</span>
+          <span class="price-value">$5 USD</span>
+        </div>
+      `;
+    }
+
+    // Render recent transactions
+    const txTbody = document.querySelector('#transactions-table tbody');
+    if (marketData.recentTransactions && marketData.recentTransactions.length > 0) {
+      txTbody.innerHTML = marketData.recentTransactions.map(tx => {
+        const date = new Date(tx.Timestamp).toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+        const price = tx.PriceZen ? `${tx.PriceZen.toLocaleString('es-AR')} Zen` : (tx.PaymentItemName ? `${tx.PaymentItemQuantity}x ${tx.PaymentItemName}` : '-');
+        return `<tr>
+          <td>${date}</td>
+          <td>${tx.TransactionType}</td>
+          <td>${tx.Quantity}x ${tx.ItemName}</td>
+          <td>${price}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      txTbody.innerHTML = `<tr><td colspan="4" class="text-center">No hay transacciones registradas aun.</td></tr>`;
+    }
+
+    // Render patrimony top
+    const patTbody = document.querySelector('#patrimony-table tbody');
+    if (patrimonyData.rankings && patrimonyData.rankings.length > 0) {
+      patTbody.innerHTML = patrimonyData.rankings.map((r, i) => {
+        const date = new Date(r.SnapshotTime).toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+        return `<tr>
+          <td>#${i + 1}</td>
+          <td>Jugador ${i + 1}</td>
+          <td>${parseFloat(r.TotalPatrimony).toLocaleString('es-AR', { minimumFractionDigits: 2 })} Bless eq.</td>
+          <td>${date}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      patTbody.innerHTML = `<tr><td colspan="4" class="text-center">Los rankings se calcularan cuando haya suficiente actividad economica.</td></tr>`;
+    }
+  } catch (err) {
+    console.error('Error cargando rankings:', err);
+    document.querySelector('#patrimony-table tbody').innerHTML = `<tr><td colspan="4" class="text-center">Error cargando datos. Intenta recargar la pagina.</td></tr>`;
+    document.querySelector('#transactions-table tbody').innerHTML = `<tr><td colspan="4" class="text-center">Error cargando datos.</td></tr>`;
+  }
+}
+
+loadRankings();
+</script>

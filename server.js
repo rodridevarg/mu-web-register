@@ -101,6 +101,75 @@ app.get('/api/status', async (req, res) => {
   res.json(status);
 });
 
+// API endpoints de economia
+app.get('/api/economy/market', async (req, res) => {
+  try {
+    // Precios de referencia oficiales
+    const refPrices = await openmuPool.query(
+      `SELECT "ItemName", "PriceInBless" FROM data."ReferencePrice" WHERE "IsActive" = true ORDER BY "ItemName"`
+    );
+
+    // Ultimo snapshot de precios del mercado P2P (ultimas 24h)
+    const marketSnap = await openmuPool.query(
+      `SELECT "ItemName", "AveragePrice", "TransactionCount", "MinPrice", "MaxPrice"
+       FROM data."MarketPriceSnapshot"
+       WHERE "SnapshotTime" > now() - interval '24 hours'
+       ORDER BY "SnapshotTime" DESC`
+    );
+
+    // Ultimas 10 transacciones
+    const recentTx = await openmuPool.query(
+      `SELECT "Timestamp", "TransactionType", "ItemName", "Quantity", "PriceZen", "PaymentItemName", "PaymentItemQuantity"
+       FROM data."EconomyTransaction"
+       ORDER BY "Timestamp" DESC
+       LIMIT 10`
+    );
+
+    res.json({
+      referencePrices: refPrices.rows,
+      marketSnapshots: marketSnap.rows,
+      recentTransactions: recentTx.rows,
+    });
+  } catch (err) {
+    console.error('Error en /api/economy/market:', err);
+    res.status(500).json({ error: 'Error al cargar datos de mercado' });
+  }
+});
+
+app.get('/api/economy/patrimony/top', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const top = await openmuPool.query(
+      `SELECT cp."TotalPatrimony", cp."ZenValue", cp."BlessCount", cp."SoulCount", cp."LifeCount", cp."ChaosCount", cp."SnapshotTime"
+       FROM data."CharacterPatrimony" cp
+       INNER JOIN (
+         SELECT "CharacterId", MAX("SnapshotTime") as max_time
+         FROM data."CharacterPatrimony"
+         GROUP BY "CharacterId"
+       ) latest ON cp."CharacterId" = latest."CharacterId" AND cp."SnapshotTime" = latest.max_time
+       ORDER BY cp."TotalPatrimony" DESC
+       LIMIT $1`,
+      [limit]
+    );
+    res.json({ rankings: top.rows });
+  } catch (err) {
+    console.error('Error en /api/economy/patrimony/top:', err);
+    res.status(500).json({ error: 'Error al cargar rankings de patrimonio' });
+  }
+});
+
+app.get('/api/economy/systembank', async (req, res) => {
+  try {
+    const bank = await openmuPool.query(
+      `SELECT "TotalZenCollected", "TotalTransactions", "LastUpdated" FROM data."SystemBank" WHERE "Id" = '00000000-0000-0000-0000-000000000001'`
+    );
+    res.json({ systemBank: bank.rows[0] || { TotalZenCollected: 0, TotalTransactions: 0 } });
+  } catch (err) {
+    console.error('Error en /api/economy/systembank:', err);
+    res.status(500).json({ error: 'Error al cargar datos del banco' });
+  }
+});
+
 // ================== RUTAS ==================
 
 // Home
