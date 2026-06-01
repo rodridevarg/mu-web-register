@@ -13,11 +13,11 @@ const PORT = process.env.PORT || 3000;
 
 // PostgreSQL pool for OpenMU game accounts
 const openmuPool = new Pool({
-  user: 'openmu',
-  host: 'localhost',
-  database: 'openmu',
-  password: 'openmu123',
-  port: 5432,
+  user: process.env.OPENMU_DB_USER || 'openmu',
+  host: process.env.OPENMU_DB_HOST || 'localhost',
+  database: process.env.OPENMU_DB_NAME || 'openmu',
+  password: process.env.OPENMU_DB_PASSWORD || 'openmu123',
+  port: Number(process.env.OPENMU_DB_PORT || 5432),
 });
 
 // Configuración de vistas
@@ -99,6 +99,83 @@ async function checkServerStatus() {
 app.get('/api/status', async (req, res) => {
   const status = await checkServerStatus();
   res.json(status);
+});
+
+// API endpoints de economia
+app.get('/api/economy/market', async (req, res) => {
+  try {
+    // Precios de referencia oficiales
+    const refPrices = await openmuPool.query(
+      `SELECT "ItemName", "PriceInBless" FROM data."ReferencePrice" WHERE "IsActive" = true ORDER BY "ItemName"`
+    );
+
+    // Ultimo snapshot de precios del mercado P2P (ultimas 24h) — leido directo de EconomyTransaction
+    const marketSnap = await openmuPool.query(
+      `SELECT "ItemName",
+              ROUND(AVG("PriceZen")::numeric, 2) as "AveragePrice",
+              COUNT(*) as "TransactionCount",
+              MIN("PriceZen") as "MinPrice",
+              MAX("PriceZen") as "MaxPrice"
+       FROM data."EconomyTransaction"
+       WHERE "Timestamp" > now() - interval '24 hours'
+         AND "PriceZen" IS NOT NULL AND "PriceZen" > 0
+       GROUP BY "ItemName"
+       ORDER BY "TransactionCount" DESC`
+    );
+
+    // Ultimas 10 transacciones
+    const recentTx = await openmuPool.query(
+      `SELECT "Timestamp", "TransactionType", "ItemName", "Quantity", "PriceZen", "PaymentItemName", "PaymentItemQuantity"
+       FROM data."EconomyTransaction"
+       ORDER BY "Timestamp" DESC
+       LIMIT 10`
+    );
+
+    res.json({
+      referencePrices: refPrices.rows,
+      marketSnapshots: marketSnap.rows,
+      recentTransactions: recentTx.rows,
+    });
+  } catch (err) {
+    console.error('Error en /api/economy/market:', err);
+    res.status(500).json({ error: 'Error al cargar datos de mercado' });
+  }
+});
+
+app.get('/api/economy/patrimony/top', async (req, res) => {
+  try {
+    const rawLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(rawLimit, 50)) : 10;
+    const top = await openmuPool.query(
+      `SELECT ch."Name", cp."TotalPatrimony", cp."ZenValue", cp."BlessCount", cp."SoulCount", cp."LifeCount", cp."ChaosCount", cp."SnapshotTime"
+       FROM data."CharacterPatrimony" cp
+       JOIN data."Character" ch ON ch."Id" = cp."CharacterId"
+       INNER JOIN (
+         SELECT "CharacterId", MAX("SnapshotTime") as max_time
+         FROM data."CharacterPatrimony"
+         GROUP BY "CharacterId"
+       ) latest ON cp."CharacterId" = latest."CharacterId" AND cp."SnapshotTime" = latest.max_time
+       ORDER BY cp."TotalPatrimony" DESC
+       LIMIT $1`,
+      [limit]
+    );
+    res.json({ rankings: top.rows });
+  } catch (err) {
+    console.error('Error en /api/economy/patrimony/top:', err);
+    res.status(500).json({ error: 'Error al cargar rankings de patrimonio' });
+  }
+});
+
+app.get('/api/economy/systembank', async (req, res) => {
+  try {
+    const bank = await openmuPool.query(
+      `SELECT "TotalZenCollected", "TotalTransactions", "LastUpdated" FROM data."SystemBank" WHERE "Id" = '00000000-0000-0000-0000-000000000001'`
+    );
+    res.json({ systemBank: bank.rows[0] || { TotalZenCollected: 0, TotalTransactions: 0 } });
+  } catch (err) {
+    console.error('Error en /api/economy/systembank:', err);
+    res.status(500).json({ error: 'Error al cargar datos del banco' });
+  }
 });
 
 // ================== RUTAS ==================
@@ -194,7 +271,29 @@ app.get('/download/client', (req, res) => {
 
 // Tienda de Joyas
 app.get('/shop', (req, res) => {
-  res.render('shop', { title: 'Tienda de Joyas' });
+  res.render('shop', { title: 'Tienda de Joyas', error: null, success: null });
+});
+
+app.post('/shop/order', async (req, res) => {
+  const { game_account, contact_method, notes } = req.body;
+  if (!game_account || game_account.length < 3) {
+    return res.render('shop', { title: 'Tienda de Joyas', error: 'Ingresa una cuenta de juego valida.', success: null });
+  }
+  try {
+    await run(
+      `INSERT INTO orders (game_account, pack_name, pack_price, pack_contents, contact_method, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+      [game_account, 'Pack Mensual Starter', '5 USD', '5x Jewel of Bless + 5x Jewel of Soul', contact_method || '', notes || '']
+    );
+    res.render('shop', { title: 'Tienda de Joyas', error: null, success: `Pedido registrado para la cuenta "${game_account}". Contacta al admin por Discord para coordinar el pago y la entrega.` });
+  } catch (err) {
+    console.error('Error en pedido:', err);
+    res.render('shop', { title: 'Tienda de Joyas', error: 'Error al registrar el pedido. Intenta de nuevo.', success: null });
+  }
+});
+
+// Rankings economicos
+app.get('/rankings', async (req, res) => {
+  res.render('rankings', { title: 'Rankings' });
 });
 
 // Login de admin
@@ -226,15 +325,29 @@ app.get('/logout', (req, res) => {
 app.get('/admin', requireAdmin, async (req, res) => {
   try {
     const users = await all(`SELECT id, username, email, created_at, status FROM users ORDER BY created_at DESC`);
+    const orders = await all(`SELECT id, game_account, pack_name, pack_price, pack_contents, status, contact_method, notes, created_at FROM orders ORDER BY created_at DESC`);
     const stats = {
       total: users.length,
       pending: users.filter(u => u.status === 'pending').length,
-      active: users.filter(u => u.status === 'active').length
+      active: users.filter(u => u.status === 'active').length,
+      ordersPending: orders.filter(o => o.status === 'pending').length,
+      ordersDelivered: orders.filter(o => o.status === 'delivered').length,
     };
-    res.render('admin', { users, stats, error: null, success: null });
+    res.render('admin', { users, orders, stats, error: null, success: null });
   } catch (err) {
     console.error(err);
-    res.render('admin', { users: [], stats: {}, error: 'Error al cargar usuarios.', success: null });
+    res.render('admin', { users: [], orders: [], stats: {}, error: 'Error al cargar datos.', success: null });
+  }
+});
+
+app.post('/admin/deliver', requireAdmin, async (req, res) => {
+  const { order_id } = req.body;
+  try {
+    await run(`UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id = ?`, [order_id]);
+    res.redirect('/admin?success=Pedido+ marcado+ como+ entregado');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/admin?error=Error+ al+ marcar+ entrega');
   }
 });
 

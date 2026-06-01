@@ -1038,3 +1038,180 @@ body {
   margin-top: 1rem;
   font-style: italic;
 }
+
+/* Shop Form */
+.shop-form {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.shop-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.shop-form label {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--mu-text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.shop-form input,
+.shop-form textarea {
+  width: 100%;
+  padding: 0.6rem;
+  background: var(--mu-dark);
+  border: 1px solid var(--mu-border);
+  border-radius: 4px;
+  color: var(--mu-text);
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+}
+
+.shop-form input:focus,
+.shop-form textarea:focus {
+  outline: none;
+  border-color: var(--mu-gold);
+  box-shadow: 0 0 8px rgba(201,168,76,0.2);
+}
+
+.shop-form button {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* Status delivered */
+.status-delivered {
+  background: rgba(39, 174, 96, 0.15);
+  color: #2ecc71;
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+/* Rankings */
+.rankings-section {
+  margin: 2rem 0;
+  padding: 2rem;
+}
+
+.rankings-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.rankings-header h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--mu-gold);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+}
+
+.rankings-subtitle {
+  color: var(--mu-text-muted);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.ranking-card {
+  background: linear-gradient(180deg, var(--mu-dark-light) 0%, var(--mu-dark) 100%);
+  border: 1px solid var(--mu-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.ranking-card:hover {
+  border-color: var(--mu-gold-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ranking-card h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--mu-gold);
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.ranking-desc {
+  color: var(--mu-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.reference-prices {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--mu-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.price-row:last-child {
+  border-bottom: none;
+}
+
+.price-item {
+  color: var(--mu-text);
+  font-size: 0.9rem;
+}
+
+.price-value {
+  color: var(--mu-gold);
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+}
+
+.rankings-note {
+  background: var(--mu-dark-light);
+  border: 1px solid var(--mu-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--mu-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.rankings-note code {
+  background: rgba(201,168,76,0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  color: var(--mu-gold);
+  font-family: monospace;
+}
+
+.text-muted {
+  color: var(--mu-text-muted);
+  font-size: 0.85rem;
+}
+
+.btn-success {
+  background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+  color: #fff;
+  border-color: #27ae60;
+}
+
+.btn-success:hover {
+  background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+  box-shadow: 0 0 15px rgba(39, 174, 96, 0.4);
+}

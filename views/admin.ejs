@@ -14,6 +14,14 @@
         <span class="stat-label">Activos</span>
         <span class="stat-value"><%= stats.active || 0 %></span>
       </div>
+      <div class="stat-item">
+        <span class="stat-label">Pedidos Pendientes</span>
+        <span class="stat-value"><%= stats.ordersPending || 0 %></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Entregados</span>
+        <span class="stat-value"><%= stats.ordersDelivered || 0 %></span>
+      </div>
     </div>
   </div>
 
@@ -23,6 +31,59 @@
   <% if (success) { %>
     <div class="alert alert-success"><%= success %></div>
   <% } %>
+
+  <div class="admin-section">
+    <h3>Pedidos de Tienda</h3>
+    <div class="table-wrapper">
+      <table class="mu-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cuenta</th>
+            <th>Pack</th>
+            <th>Precio</th>
+            <th>Contacto</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (orders && orders.length > 0) { %>
+            <% orders.forEach(order => { %>
+              <tr>
+                <td><%= order.id %></td>
+                <td><strong><%= order.game_account %></strong></td>
+                <td><%= order.pack_name %></td>
+                <td><%= order.pack_price %></td>
+                <td><%= order.contact_method || '-' %></td>
+                <td>
+                  <span class="status-badge status-<%= order.status %>">
+                    <%= order.status === 'pending' ? 'Pendiente' : 'Entregado' %>
+                  </span>
+                </td>
+                <td><%= new Date(order.created_at).toLocaleString('es-AR') %></td>
+                <td>
+                  <% if (order.status === 'pending') { %>
+                    <form method="POST" action="/admin/deliver" style="display:inline">
+                      <input type="hidden" name="order_id" value="<%= order.id %>">
+                      <button type="submit" class="btn btn-small btn-success" onclick="return confirm('Marcar pedido #<%= order.id %> como entregado? Recuerda ejecutar /entregar <%= order.game_account %> Bless 5 y Soul 5 en el juego.')">Marcar Entregado</button>
+                    </form>
+                  <% } else { %>
+                    <span class="text-muted"><%= order.delivered_at ? new Date(order.delivered_at).toLocaleString('es-AR') : '-' %></span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="8" class="text-center">No hay pedidos registrados.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <div class="admin-section">
     <h3>Usuarios Registrados</h3>
@@ -67,14 +128,14 @@
   </div>
 
   <div class="admin-section">
-    <h3>Como crear cuentas en OpenMU</h3>
+    <h3>Como entregar pedidos manualmente</h3>
     <div class="info-box">
       <ol>
-        <li>Abri el <a href="http://localhost:5000" target="_blank">Panel de Admin de OpenMU</a></li>
-        <li>Navega a <strong>Accounts</strong> y haz click en <strong>Create New</strong></li>
-        <li>Completa los datos copiados desde esta tabla</li>
-        <li>La contraseña en OpenMU se guarda con BCrypt (la misma que ingreso el usuario)</li>
-        <li><strong>Proximamente:</strong> sincronizacion automatica con el servidor.</li>
+        <li>Ingresa al juego con una cuenta de admin (GM)</li>
+        <li>Ejecuta el comando: <code>/entregar &lt;cuenta&gt; Bless 5</code></li>
+        <li>Ejecuta el comando: <code>/entregar &lt;cuenta&gt; Soul 5</code></li>
+        <li>Los items apareceran en el vault del personaje de la cuenta</li>
+        <li>Luego, volve aqui y marca el pedido como <strong>Entregado</strong></li>
       </ol>
     </div>
   </div>
