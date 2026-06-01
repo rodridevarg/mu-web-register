@@ -839,4 +839,202 @@ body {
   .economy-section {
     padding: 1rem;
   }
+
+  .shop-grid {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+  }
+}
+
+/* ==========================================
+   Tienda de Joyas
+   ========================================== */
+
+.shop-section {
+  margin: 2rem 0;
+  padding: 2rem;
+}
+
+.shop-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.shop-header h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--mu-gold);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+}
+
+.shop-subtitle {
+  color: var(--mu-text-muted);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.shop-card {
+  background: linear-gradient(180deg, var(--mu-dark-light) 0%, var(--mu-dark) 100%);
+  border: 2px solid var(--mu-gold-dark);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.shop-featured {
+  border-color: var(--mu-gold);
+  box-shadow: 0 0 30px rgba(201, 168, 76, 0.15);
+}
+
+.shop-featured:hover {
+  box-shadow: 0 0 40px rgba(201, 168, 76, 0.25);
+  transform: translateY(-4px);
+}
+
+.shop-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--mu-gold) 0%, var(--mu-gold-dark) 100%);
+  color: var(--mu-dark);
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 0.3rem 1.2rem;
+  border-radius: 20px;
+  border: 2px solid var(--mu-gold);
+}
+
+.shop-icon {
+  font-size: 3.5rem;
+  margin: 1rem 0;
+  filter: drop-shadow(0 0 10px rgba(201, 168, 76, 0.5));
+}
+
+.shop-card h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--mu-gold);
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.shop-price {
+  margin: 1.5rem 0;
+}
+
+.price-value {
+  font-family: 'Cinzel', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--mu-gold);
+  text-shadow: 0 0 15px rgba(201, 168, 76, 0.4);
+}
+
+.shop-contents {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--mu-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shop-item:last-child {
+  border-bottom: none;
+}
+
+.item-icon {
+  font-size: 1.3rem;
+}
+
+.bless-icon {
+  color: #5dade2;
+  filter: drop-shadow(0 0 4px rgba(93, 173, 226, 0.5));
+}
+
+.soul-icon {
+  color: #e74c3c;
+  filter: drop-shadow(0 0 4px rgba(231, 76, 60, 0.5));
+}
+
+.item-name {
+  color: var(--mu-text);
+  font-size: 0.95rem;
+}
+
+.item-qty {
+  color: var(--mu-gold);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.shop-legend {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(39, 174, 96, 0.05);
+  border: 1px solid rgba(39, 174, 96, 0.2);
+  border-radius: 6px;
+}
+
+.shop-legend p {
+  color: var(--mu-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.shop-legend p::before {
+  content: '\2605';
+  color: var(--mu-gold);
+  margin-right: 0.4rem;
+}
+
+.btn-disabled {
+  background: #2a2a2a;
+  color: #666;
+  border: 2px solid #444;
+  cursor: not-allowed;
+  opacity: 0.7;
+  font-size: 1rem;
+  padding: 1rem 2.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.btn-disabled:hover {
+  background: #2a2a2a;
+  color: #666;
+  box-shadow: none;
+  transform: none;
+}
+
+.shop-note {
+  color: var(--mu-text-muted);
+  font-size: 0.8rem;
+  margin-top: 1rem;
+  font-style: italic;
 }
