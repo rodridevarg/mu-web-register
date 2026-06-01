@@ -46,6 +46,22 @@ function initDatabase() {
       });
     }
   });
+
+  // Tabla de pedidos de tienda (entregas manuales)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      game_account TEXT NOT NULL,
+      pack_name TEXT NOT NULL,
+      pack_price TEXT NOT NULL,
+      pack_contents TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      contact_method TEXT,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      delivered_at DATETIME
+    )
+  `);
 }
 
 function run(sql, params = []) {

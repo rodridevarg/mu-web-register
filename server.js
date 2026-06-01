@@ -194,7 +194,29 @@ app.get('/download/client', (req, res) => {
 
 // Tienda de Joyas
 app.get('/shop', (req, res) => {
-  res.render('shop', { title: 'Tienda de Joyas' });
+  res.render('shop', { title: 'Tienda de Joyas', error: null, success: null });
+});
+
+app.post('/shop/order', async (req, res) => {
+  const { game_account, contact_method, notes } = req.body;
+  if (!game_account || game_account.length < 3) {
+    return res.render('shop', { title: 'Tienda de Joyas', error: 'Ingresa una cuenta de juego valida.', success: null });
+  }
+  try {
+    await run(
+      `INSERT INTO orders (game_account, pack_name, pack_price, pack_contents, contact_method, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+      [game_account, 'Pack Mensual Starter', '5 USD', '5x Jewel of Bless + 5x Jewel of Soul', contact_method || '', notes || '']
+    );
+    res.render('shop', { title: 'Tienda de Joyas', error: null, success: `Pedido registrado para la cuenta "${game_account}". Contacta al admin por Discord para coordinar el pago y la entrega.` });
+  } catch (err) {
+    console.error('Error en pedido:', err);
+    res.render('shop', { title: 'Tienda de Joyas', error: 'Error al registrar el pedido. Intenta de nuevo.', success: null });
+  }
+});
+
+// Rankings economicos
+app.get('/rankings', async (req, res) => {
+  res.render('rankings', { title: 'Rankings' });
 });
 
 // Login de admin
@@ -226,15 +248,29 @@ app.get('/logout', (req, res) => {
 app.get('/admin', requireAdmin, async (req, res) => {
   try {
     const users = await all(`SELECT id, username, email, created_at, status FROM users ORDER BY created_at DESC`);
+    const orders = await all(`SELECT id, game_account, pack_name, pack_price, pack_contents, status, contact_method, notes, created_at FROM orders ORDER BY created_at DESC`);
     const stats = {
       total: users.length,
       pending: users.filter(u => u.status === 'pending').length,
-      active: users.filter(u => u.status === 'active').length
+      active: users.filter(u => u.status === 'active').length,
+      ordersPending: orders.filter(o => o.status === 'pending').length,
+      ordersDelivered: orders.filter(o => o.status === 'delivered').length,
     };
-    res.render('admin', { users, stats, error: null, success: null });
+    res.render('admin', { users, orders, stats, error: null, success: null });
   } catch (err) {
     console.error(err);
-    res.render('admin', { users: [], stats: {}, error: 'Error al cargar usuarios.', success: null });
+    res.render('admin', { users: [], orders: [], stats: {}, error: 'Error al cargar datos.', success: null });
+  }
+});
+
+app.post('/admin/deliver', requireAdmin, async (req, res) => {
+  const { order_id } = req.body;
+  try {
+    await run(`UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id = ?`, [order_id]);
+    res.redirect('/admin?success=Pedido+ marcado+ como+ entregado');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/admin?error=Error+ al+ marcar+ entrega');
   }
 });
 
