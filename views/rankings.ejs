@@ -133,7 +133,7 @@ async function loadRankings() {
         const date = new Date(r.SnapshotTime).toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
         return `<tr>
           <td>#${i + 1}</td>
-          <td>Jugador ${i + 1}</td>
+          <td>${r.Name || 'Jugador ' + (i + 1)}</td>
           <td>${parseFloat(r.TotalPatrimony).toLocaleString('es-AR', { minimumFractionDigits: 2 })} Bless eq.</td>
           <td>${date}</td>
         </tr>`;

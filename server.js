@@ -13,11 +13,11 @@ const PORT = process.env.PORT || 3000;
 
 // PostgreSQL pool for OpenMU game accounts
 const openmuPool = new Pool({
-  user: 'openmu',
-  host: 'localhost',
-  database: 'openmu',
-  password: 'openmu123',
-  port: 5432,
+  user: process.env.OPENMU_DB_USER || 'openmu',
+  host: process.env.OPENMU_DB_HOST || 'localhost',
+  database: process.env.OPENMU_DB_NAME || 'openmu',
+  password: process.env.OPENMU_DB_PASSWORD || 'openmu123',
+  port: Number(process.env.OPENMU_DB_PORT || 5432),
 });
 
 // Configuración de vistas
@@ -109,12 +109,18 @@ app.get('/api/economy/market', async (req, res) => {
       `SELECT "ItemName", "PriceInBless" FROM data."ReferencePrice" WHERE "IsActive" = true ORDER BY "ItemName"`
     );
 
-    // Ultimo snapshot de precios del mercado P2P (ultimas 24h)
+    // Ultimo snapshot de precios del mercado P2P (ultimas 24h) — leido directo de EconomyTransaction
     const marketSnap = await openmuPool.query(
-      `SELECT "ItemName", "AveragePrice", "TransactionCount", "MinPrice", "MaxPrice"
-       FROM data."MarketPriceSnapshot"
-       WHERE "SnapshotTime" > now() - interval '24 hours'
-       ORDER BY "SnapshotTime" DESC`
+      `SELECT "ItemName",
+              ROUND(AVG("PriceZen")::numeric, 2) as "AveragePrice",
+              COUNT(*) as "TransactionCount",
+              MIN("PriceZen") as "MinPrice",
+              MAX("PriceZen") as "MaxPrice"
+       FROM data."EconomyTransaction"
+       WHERE "Timestamp" > now() - interval '24 hours'
+         AND "PriceZen" IS NOT NULL AND "PriceZen" > 0
+       GROUP BY "ItemName"
+       ORDER BY "TransactionCount" DESC`
     );
 
     // Ultimas 10 transacciones
@@ -138,10 +144,12 @@ app.get('/api/economy/market', async (req, res) => {
 
 app.get('/api/economy/patrimony/top', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+    const rawLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(rawLimit, 50)) : 10;
     const top = await openmuPool.query(
-      `SELECT cp."TotalPatrimony", cp."ZenValue", cp."BlessCount", cp."SoulCount", cp."LifeCount", cp."ChaosCount", cp."SnapshotTime"
+      `SELECT ch."Name", cp."TotalPatrimony", cp."ZenValue", cp."BlessCount", cp."SoulCount", cp."LifeCount", cp."ChaosCount", cp."SnapshotTime"
        FROM data."CharacterPatrimony" cp
+       JOIN data."Character" ch ON ch."Id" = cp."CharacterId"
        INNER JOIN (
          SELECT "CharacterId", MAX("SnapshotTime") as max_time
          FROM data."CharacterPatrimony"
