@@ -367,6 +367,28 @@ body {
   font-size: 0.75rem;
 }
 
+.btn-discord {
+  background: #5865F2;
+  color: #fff;
+  border-color: #5865F2;
+  margin-top: 0.5rem;
+}
+
+.btn-discord:hover {
+  background: #4752C4;
+  box-shadow: 0 0 10px rgba(88, 101, 242, 0.4);
+  transform: translateY(-2px);
+}
+
+.nav-discord {
+  color: #aab2ff !important;
+}
+
+.nav-discord:hover {
+  color: #5865F2 !important;
+  border-bottom-color: #5865F2 !important;
+}
+
 /* Info Grid */
 .info-grid {
   display: grid;

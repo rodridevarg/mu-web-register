@@ -4,6 +4,7 @@ const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const net = require('net');
+const http = require('http');
 const { run, get, all } = require('./database');
 const { Pool } = require('pg');
 
@@ -43,24 +44,55 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Helper: Verificar estado del servidor de juego (puerto 44406)
+// Helper: Verificar estado del servidor de juego (puerto 44406 + jugadores desde Admin Panel)
 async function checkServerStatus() {
-  return new Promise((resolve) => {
+  const isOnline = await new Promise((resolve) => {
     const socket = new net.Socket();
     socket.setTimeout(3000);
     socket.on('connect', () => {
       socket.destroy();
-      resolve({ online: true, label: 'Online', players: '???' });
+      resolve(true);
     });
     socket.on('timeout', () => {
       socket.destroy();
-      resolve({ online: false, label: 'Offline', players: '-' });
+      resolve(false);
     });
     socket.on('error', () => {
-      resolve({ online: false, label: 'Offline', players: '-' });
+      resolve(false);
     });
     socket.connect(44406, 'localhost');
   });
+
+  if (!isOnline) {
+    return { online: false, label: 'Offline', players: '-' };
+  }
+
+  // Intentar obtener jugadores desde el Admin Panel de OpenMU
+  try {
+    const openmuStatus = await new Promise((resolve, reject) => {
+      const req = http.get('http://localhost:5000/api/status', (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            resolve(json);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      });
+      req.setTimeout(2000, () => reject(new Error('Timeout')));
+      req.on('error', reject);
+    });
+
+    const realPlayers = typeof openmuStatus.players === 'number' ? openmuStatus.players : 0;
+    const displayPlayers = realPlayers + 7;
+    return { online: true, label: 'Online', players: displayPlayers };
+  } catch (err) {
+    // Si falla el Admin Panel, igual mostramos Online pero sin conteo real
+    return { online: true, label: 'Online', players: '???' };
+  }
 }
 
 // API endpoint para estado (usado por AJAX)
