@@ -192,6 +192,11 @@ app.get('/download/client', (req, res) => {
   }
 });
 
+// Tienda de Joyas
+app.get('/shop', (req, res) => {
+  res.render('shop', { title: 'Tienda de Joyas' });
+});
+
 // Login de admin
 app.get('/login', (req, res) => {
   res.render('login', { error: null });
