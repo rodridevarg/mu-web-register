@@ -91,6 +91,45 @@
   </div>
 </div>
 
+<!-- Market Prices Widget -->
+<div class="economy-section" style="margin-top: 2rem;">
+  <div class="economy-header">
+    <h2>Precios del Mercado</h2>
+    <p class="economy-subtitle">Valores de referencia en Joyas, establecidos por la administracion. Siempre conviene comprar P2P entre jugadores.</p>
+  </div>
+
+  <div class="rankings-grid" id="market-prices-widget" style="margin-bottom: 1rem;">
+    <div class="ranking-card">
+      <h3>Precios de Referencia</h3>
+      <p class="ranking-desc">En unidades de <strong>Jewel of Bless</strong> (moneda base).</p>
+      <div class="reference-prices" id="home-reference-prices">
+        <div class="price-row"><span class="price-item">Cargando...</span><span class="price-value">-</span></div>
+      </div>
+    </div>
+
+    <div class="ranking-card">
+      <h3>Ultimas Transacciones</h3>
+      <p class="ranking-desc">Intercambios recientes entre jugadores.</p>
+      <div class="reference-prices" id="home-recent-tx">
+        <p class="text-muted" style="text-align:center;padding:1rem 0;">No hay transacciones registradas aun.</p>
+      </div>
+    </div>
+
+    <div class="ranking-card">
+      <h3>Banco del Sistema</h3>
+      <p class="ranking-desc">Zen recaudado en comisiones y sinks.</p>
+      <div class="reference-prices" id="home-system-bank">
+        <div class="price-row"><span class="price-item">Total recaudado</span><span class="price-value" id="sys-bank-zen">-</span></div>
+        <div class="price-row"><span class="price-item">Transacciones</span><span class="price-value" id="sys-bank-tx">-</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 1rem;">
+    <a href="/rankings" class="btn btn-secondary">Ver Rankings Completos</a>
+  </div>
+</div>
+
 <div class="info-grid">
   <div class="info-card">
     <h3>Season 6 EP3</h3>
@@ -110,3 +149,53 @@
     <a href="https://discord.gg/gUeHUANPc" target="_blank" class="btn btn-small btn-discord">Unirse a Discord</a>
   </div>
 </div>
+
+<script>
+async function loadHomeMarketData() {
+  try {
+    const [marketRes, bankRes] = await Promise.all([
+      fetch('/api/economy/market'),
+      fetch('/api/economy/systembank')
+    ]);
+
+    const marketData = await marketRes.json();
+    const bankData = await bankRes.json();
+
+    // Reference prices
+    const refContainer = document.getElementById('home-reference-prices');
+    if (marketData.referencePrices && marketData.referencePrices.length > 0) {
+      refContainer.innerHTML = marketData.referencePrices.map(p => `
+        <div class="price-row">
+          <span class="price-item">${p.ItemName}</span>
+          <span class="price-value">${parseFloat(p.PriceInBless).toFixed(1)} Bless</span>
+        </div>
+      `).join('');
+    } else {
+      refContainer.innerHTML = '<div class="price-row"><span class="price-item">No hay precios configurados.</span><span class="price-value">-</span></div>';
+    }
+
+    // Recent transactions
+    const txContainer = document.getElementById('home-recent-tx');
+    if (marketData.recentTransactions && marketData.recentTransactions.length > 0) {
+      txContainer.innerHTML = marketData.recentTransactions.slice(0, 5).map(tx => {
+        const date = new Date(tx.Timestamp).toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+        const price = tx.PriceZen ? `${tx.PriceZen.toLocaleString('es-AR')} Zen` : (tx.PaymentItemName ? `${tx.PaymentItemQuantity}x ${tx.PaymentItemName}` : '-');
+        return `<div class="price-row"><span class="price-item">${date} - ${tx.ItemName}</span><span class="price-value">${price}</span></div>`;
+      }).join('');
+    } else {
+      txContainer.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem 0;">No hay transacciones registradas aun. Usa <code>/mercado</code> en el juego.</p>';
+    }
+
+    // System bank
+    if (bankData.systemBank) {
+      document.getElementById('sys-bank-zen').textContent = parseInt(bankData.systemBank.TotalZenCollected).toLocaleString('es-AR') + ' Zen';
+      document.getElementById('sys-bank-tx').textContent = parseInt(bankData.systemBank.TotalTransactions).toLocaleString('es-AR');
+    }
+  } catch (err) {
+    console.error('Error cargando datos de economia:', err);
+    document.getElementById('home-reference-prices').innerHTML = '<div class="price-row"><span class="price-item">Error cargando datos.</span><span class="price-value">-</span></div>';
+  }
+}
+
+loadHomeMarketData();
+</script>

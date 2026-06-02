@@ -261,7 +261,7 @@ app.get('/download', (req, res) => {
 
 // Serve client zip file
 app.get('/download/client', (req, res) => {
-  const filePath = path.join(__dirname, 'public', 'downloads', 'LiberMU_Client_v2.zip');
+  const filePath = path.join(__dirname, 'public', 'downloads', 'LiberMU_Client.zip');
   if (require('fs').existsSync(filePath)) {
     res.download(filePath, 'LiberMU_Client.zip');
   } else {
